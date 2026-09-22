@@ -1,5 +1,7 @@
 # Greedy-Matching – die billigste Zuordnung zuerst – Streamlit-Demo
 
+**[→ Demo live ausprobieren](https://sebastianhanisch-greedy-matching-demo.streamlit.app/)**
+
 Erstes Stück (**Wurzel**) der **Matching-Linie** der "Konzepte"-Reihe für die Website "Sebastian Hanisch – Operations Research und Machine Learning":
 anders als die Fall-Demos im Portfolio (ein Anwendungsfall, mehrere Verfahren im Vergleich) zeigt diese Demo **ein** Verfahren – **Greedy-Matching** – an einem wachsenden Beispiel.
 Ein Dispatcher hat **Fahrzeuge** und **Aufträge**; jedes Fahrzeug übernimmt höchstens einen Auftrag, jeder Auftrag hat höchstens ein Fahrzeug, nur Paare in **Reichweite** kommen infrage.
