@@ -70,7 +70,7 @@ und zeigt, **wo Greedy stark ist** (sehr knappe Reichweite) **und wo es verliert
 )
 st.caption(
     "Anders als die Fall-Demos im Portfolio, die an einem Anwendungsfall mehrere Verfahren vergleichen, zeigt diese Demo - erstes Stück der Matching-Linie der \"Konzepte\"-Reihe - **ein** Verfahren an einem wachsenden Beispiel. "
-    "Das nächste Stück, **Augmentierende Pfade**, behebt genau die Schwäche dieser Wurzel: eine gewählte Zuordnung darf wieder aufgegeben werden (noch nicht gebaut). "
+    "Das nächste Stück, **Augmentierende Pfade**, behebt genau die Schwäche dieser Wurzel: eine gewählte Zuordnung darf wieder aufgegeben werden (inzwischen gebaut, wie die ganze Matching-Linie). "
     "Das Optimum in dieser Demo kommt aus einer kleinen exakten Referenz, die hier nur zum Messen dient."
 )
 
@@ -292,7 +292,7 @@ st.markdown(
 | **Es gibt zwei getrennte Seiten** | Fahrzeuge und Aufträge bilden zwei Gruppen; sollen sich Fahrer untereinander paaren (Zweierteams), gibt es Zyklen ungerader Länge, die die zweiseitigen Verfahren nicht behandeln. | **Blossom**: allgemeine Graphen |
 """
 )
-st.caption("Die Nachbarn der Matching-Linie (noch nicht gebaut): Augmentierende Pfade, Hopcroft–Karp, Ungarische Methode, Auktionsalgorithmus, Blossom, Gewichteter Blossom, Gale–Shapley, Stabile Mitbewohner und Online-Matching.")
+st.caption("Die Matching-Linie ist inzwischen vollständig gebaut (13 Stücke): Augmentierende Pfade, Hopcroft–Karp, Ungarische Methode, Auktionsalgorithmus, Blossom, Gewichteter Blossom, Gale–Shapley, Stabile Mitbewohner, Krankenhaus-Zulassung, Top Trading Cycles, Nierentausch und Online-Matching.")
 
 st.markdown("---")
 

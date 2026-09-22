@@ -7,16 +7,21 @@ Greedy trifft jede Wahl sofort und nimmt sie **nie wieder zurück** – das ist 
 misst ihre Lücke zum exakten Optimum auf 100 festen Karten und zeigt, **wo Greedy stark ist und wo es verliert**.
 
 **Einordnung in die Reihe (die Kanten des Graphen):** die Wurzel ist bewusst die einfachste Zuordnung. Ihre Schwäche – eine gewählte Zuordnung bleibt – ist der Ansatzpunkt des nächsten Stücks (**Augmentierende Pfade**);
-die Kosten aller Paare gemeinsam zu betrachten ist die Idee der Ungarischen Methode, die feste Reihenfolge der Aufträge der Ansatz von Online-Matching, Präferenzen statt Kosten der von Gale–Shapley. Bisher gebaut: nur die Wurzel.
+die Kosten aller Paare gemeinsam zu betrachten ist die Idee der Ungarischen Methode, die feste Reihenfolge der Aufträge der Ansatz von Online-Matching, Präferenzen statt Kosten der von Gale–Shapley. Die gesamte Matching-Linie ist inzwischen vollständig gebaut (13 Stücke).
 ```
-greedy-matching-demo (Wurzel: eine gewählte Zuordnung bleibt)                    [gebaut]
-  ├─ Augmentierende Pfade (eine Zuordnung darf wieder freigegeben werden)         [nicht gebaut]
-  │    ├─ Hopcroft–Karp                                                            [nicht gebaut]
-  │    ├─ Ungarische Methode → Auktionsalgorithmus                                 [nicht gebaut]
-  │    └─ Blossom                                                                  [nicht gebaut]
-  │   Ungarisch + Blossom → Gewichteter Blossom (Konvergenz)                       [nicht gebaut]
-  ├─ Gale–Shapley → Stabile Mitbewohner                                            [nicht gebaut]
-  └─ Online-Matching                                                               [nicht gebaut]
+greedy-matching-demo (Wurzel: eine gewählte Zuordnung bleibt)                     [gebaut]
+  ├─ augmenting-path-demo (Verbesserungswege: Paare optimal, Kosten blind)        [gebaut]
+  │    ├─ hopcroft-karp-demo (viele kürzeste Wege je Phase)                       [gebaut]
+  │    ├─ hungarian-demo (Ungarische Methode: Paare zuerst, dann Kosten)           [gebaut]
+  │    │    └─ auction-algorithm-demo (Auktionsalgorithmus: dezentral)             [gebaut]
+  │    └─ blossom-demo (allgemeine Graphen: ungerade Kreise, Kontraktion)          [gebaut]
+  │        └─ weighted-blossom-demo (Ungarisch + Blossom, Konvergenz)              [gebaut]
+  ├─ gale-shapley-demo (Vorlieben statt Kosten, stabil)                            [gebaut]
+  │    ├─ stabile-mitbewohner-demo (eine Gruppe statt zwei Seiten)                 [gebaut]
+  │    ├─ krankenhaus-zulassung-demo (many-to-one, Kapazitäten)                    [gebaut]
+  │    └─ top-trading-cycles-demo (Tausch ohne Geld, Wohnungsmarkt)                [gebaut]
+  │         └─ nierentausch-demo (Kompatibilität statt Präferenz, kurze Zyklen)    [gebaut]
+  └─ online-matching-demo (Aufträge kommen nacheinander)                          [gebaut]
 ```
 
 ## Ergebnis (Zahlen aus den Tests)
