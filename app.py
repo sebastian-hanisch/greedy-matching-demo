@@ -18,6 +18,7 @@ from gm_presets import (
     init_session_state_defaults,
     load_permalink_settings,
     randomize_seed,
+    seed_widget,
     sync_query_params,
 )
 from gm_scenario import build
@@ -111,21 +112,26 @@ with st.sidebar:
         help="Welche der beiden Regeln als 'Greedy' gezeigt wird; die andere steht im Vergleich. Mit 20 Fahrzeugen und 20 Aufträgen bei Reichweite 40 hat 'Auftrag für Auftrag' auf 54 von 100 Karten das bessere Ergebnis, bei Reichweite 150 dagegen 'Billigste Kante zuerst' auf 85 von 100.",
     )
     if net_key == "random":
+        seed_widget("n_slider")
         n = st.slider("Fahrzeuge", *bounds("n_slider"), key="n_slider", help="Anzahl der Fahrzeuge. Bei mittlerer Reichweite (40) fehlen Greedy im Mittel 2,7 von 19,5 möglichen Paaren; die Lücke wächst mit der Größe der Karte.")
         st.session_state[KEPT["n_slider"]] = n
+        seed_widget("m_slider")
         m = st.slider("Aufträge", *bounds("m_slider"), key="m_slider", help="Anzahl der Aufträge. Gibt es weniger Fahrzeuge als Aufträge (10 zu 20), zahlt die Regel 'Auftrag für Auftrag' bei Reichweite 150 im Median 109 % mehr als das Optimum, 'Billigste Kante zuerst' nur 1,6 %.")
         st.session_state[KEPT["m_slider"]] = m
+        seed_widget("reach_slider")
         reach = st.slider(
             "Reichweite [min]", *bounds("reach_slider"), key="reach_slider", step=5,
             help="Wie weit ein Fahrzeug höchstens fahren darf, um einen Auftrag zu übernehmen. Ab 142 ist auf der 100×100-Karte jedes Paar möglich. "
                  "Bei 10 findet 'Billigste Kante zuerst' auf 79 von 100 Karten das Optimum, bei 40 verliert es auf 99 von 100 Paare, bei 150 verliert es nur Geld (im Median 14 % Mehrkosten).",
         )
         st.session_state[KEPT["reach_slider"]] = reach
+        seed_widget("ballung_slider")
         ballung = st.slider(
             "Ballung [%]", *bounds("ballung_slider"), key="ballung_slider", step=25,
             help="0 = Fahrzeuge und Aufträge gleichmäßig verteilt, 100 = alle um drei Stadtteile gruppiert. Bei Reichweite 30 verlieren ohne Ballung 96 von 100 Karten Paare, mit voller Ballung 52 - dafür zahlen dann 44 mehr.",
         )
         st.session_state[KEPT["ballung_slider"]] = ballung
+        seed_widget("seed_input")
         seed = st.number_input("Zufalls-Seed", *bounds("seed_input"), key="seed_input", step=1)
         st.session_state[KEPT["seed_input"]] = seed
         st.button("🎲 Neue Karte generieren", width="stretch", on_click=randomize_seed, help="Würfelt einen neuen Zufalls-Seed. Die Verteilung über 100 feste Karten weiter unten ändert sich dabei nicht - nur die Marke „Ihre Ziehung“ wandert.")
