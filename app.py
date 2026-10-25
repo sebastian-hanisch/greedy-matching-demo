@@ -69,6 +69,21 @@ Der Haken steckt im Wort *nie wieder*: eine früh gewählte billige Zuordnung ka
 und zeigt, **wo Greedy stark ist** (sehr knappe Reichweite) **und wo es verliert** (mittlere Reichweite: Paare, alles erreichbar: Geld).
 """
 )
+
+# erklaerseite:einfach:start (erzeugt von tools/set_demo_explainer.py (Website-Repo) aus tools/content/explainers/greedy-matching-erklaert.json, nicht von Hand ändern)
+with st.expander("💬 In einfachen Worten"):
+    st.markdown(
+        """
+Stellen Sie sich einen Disponenten mit freien Fahrzeugen und offenen Aufträgen vor. Jedes Fahrzeug übernimmt höchstens einen Auftrag, jeder Auftrag bekommt höchstens ein Fahrzeug, und nur Aufträge in **Reichweite** kommen infrage. Die einfachste Regel ist **gierig** (englisch greedy): immer das günstigste mögliche Paar nehmen und nie wieder anfassen.
+
+Der Haken steckt im Wort „nie“. Ein früh gewähltes billiges Paar kann später zwei bessere blockieren. Dann gehen Paare verloren, oder die Fahrten werden insgesamt teurer. Wie stark, hängt von der Reichweite ab: Bei sehr knapper Reichweite trifft die Regel oft die beste Zuordnung, bei mittlerer verliert sie Paare, und wenn alles erreichbar ist, verliert sie Geld.
+
+Die Demo legt die gierige Zuordnung neben die beste und zeigt, was beide unterscheidet. Es ist ein stark vereinfachtes Modell mit synthetischen Daten.
+
+[Ausführlich und verständlich erklärt, mit Fachteil](https://sebastianhanisch.net/greedy-matching-erklaert.html)
+        """
+    )
+# erklaerseite:einfach:end
 st.caption(
     "Anders als die Fall-Demos im Portfolio, die an einem Anwendungsfall mehrere Verfahren vergleichen, zeigt diese Demo - erstes Stück der Matching-Linie der \"Konzepte\"-Reihe - **ein** Verfahren an einem wachsenden Beispiel. "
     "Das nächste Stück, **Augmentierende Pfade**, behebt genau die Schwäche dieser Wurzel: eine gewählte Zuordnung darf wieder aufgegeben werden (inzwischen gebaut, wie die ganze Matching-Linie). "
@@ -303,6 +318,26 @@ st.caption("Die Matching-Linie ist inzwischen vollständig gebaut (13 Stücke): 
 st.markdown("---")
 
 with st.expander("📐 Mathematische Formulierung"):
+    # erklaerseite:lesehilfe:start (erzeugt von tools/set_demo_explainer.py (Website-Repo) aus tools/content/explainers/greedy-matching-erklaert.json, nicht von Hand ändern)
+    st.markdown(
+        r"""
+**Lesehilfe.** Gegeben sind Fahrzeuge $V$, Aufträge $O$ und die Entfernungen $d_{ij}$ zwischen ihnen; ein Paar ist nur bei Entfernung höchstens $R$ möglich. Gesucht ist eine Zuordnung $M$, die zuerst möglichst viele Paare und dann möglichst geringe Kosten hat. Greedy wählt Paar für Paar und nimmt nichts zurück.
+
+| Symbol | Bedeutung |
+|---|---|
+| $V$, $O$ | Menge der Fahrzeuge bzw. der Aufträge |
+| $d_{ij}$, $R$ | Entfernung von Fahrzeug $i$ zu Auftrag $j$ und Reichweite |
+| $E$ | Menge der möglichen Paare $(i,j)$ mit $d_{ij}\le R$ |
+| $c_{ij}$ | Kosten des Paares: aufgerundete Anfahrtszeit in Minuten |
+| $x_{ij}$ | 1, wenn das Paar $(i,j)$ gewählt ist, sonst 0 |
+| $M$, $c(M)$ | Zuordnung (Matching) und ihre Kostensumme |
+| $G$, $M^*$ | Ergebnis von Greedy bzw. eine größtmögliche Zuordnung (Optimum) |
+| $B$ | große Konstante, die die Paarzahl vor die Kosten stellt |
+
+[Schritt für Schritt erklärt, mit Herleitung und Literatur](https://sebastianhanisch.net/greedy-matching-erklaert.html#fachleute)
+        """
+    )
+    # erklaerseite:lesehilfe:end
     st.markdown(
         r"""
 **Modell.** Fahrzeuge $V$, Aufträge $O$, mögliche Paare $E=\{(i,j): d_{ij}\le R\}$ mit Kosten $c_{ij}=\lceil d_{ij}\rceil$ (Anfahrtszeit, ganze Minuten). Ein Matching $M\subseteq E$ enthält jedes Fahrzeug und jeden Auftrag höchstens einmal:

@@ -43,7 +43,7 @@ Jede hier genannte Zahl ist in `tests/test_claims.py` über die 100 festen Karte
 
 ## Was nicht funktioniert hat / Vorab-Hypothesen, die die Messung widerlegt hat
 
-Vor dem Schreiben der Texte wurde gemessen (400 Karten je Zelle); zwei Annahmen aus der Planung stimmten nicht:
+Vor dem Schreiben der Texte wurde gemessen (Vormessung mit 400 Karten je Zelle; die Zahlen in der Tabelle oben stammen dagegen aus den Tests über 100 feste Karten); zwei Annahmen aus der Planung stimmten nicht:
 
 - **„Bei großer Reichweite ist Greedy fast optimal.“** Falsch: bei allem erreichbar gehen zwar keine Paare verloren, aber die Mehrkosten liegen im Median bei 14 % (Regel A) beziehungsweise 21 % (Regel B) und wachsen mit der Kartengröße – das Problem verschiebt sich von den Paaren zum Geld.
 - **„Regel A (billigste Kante zuerst) ist die klügere Regel.“** Nur teilweise: sie ist bei den Kosten meist besser, behält bei mittlerer Reichweite aber etwas weniger Paare als „Auftrag für Auftrag“. Deshalb zeigt die Demo beide und stellt sie gegeneinander.
