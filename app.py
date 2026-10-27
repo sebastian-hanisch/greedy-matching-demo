@@ -93,6 +93,8 @@ st.caption(
 with st.expander("So funktioniert Greedy-Matching", expanded=True):
     st.markdown(
         """
+**Der Graph.** Fahrzeuge und Aufträge sind die **Ecken**, ein mögliches Paar (das Fahrzeug erreicht den Auftrag in der Reichweite) ist eine **Kante**. Es gibt **zwei Seiten**: Kanten laufen immer von einem Fahrzeug zu einem Auftrag, nie von Fahrzeug zu Fahrzeug oder von Auftrag zu Auftrag. Einen solchen Graphen nennt man **bipartit**. Auf der Karte liegen beide Seiten gemischt; unter **Darstellung → Zwei Seiten** stehen die Fahrzeuge links und die Aufträge rechts, und man sieht, dass jede Kante die Seite wechselt.
+
 1. **Ein Matching** ist eine Menge von Paaren (Fahrzeug, Auftrag), in der jedes Fahrzeug und jeder Auftrag höchstens einmal vorkommt. Bewertet wird zuerst nach der **Zahl der Paare**, bei gleicher Zahl nach den **Kosten** (Anfahrtszeit in Minuten).
 2. **Regel „Billigste Kante zuerst“:** alle möglichen Paare nach Kosten sortieren; von vorn nach hinten jedes Paar nehmen, dessen Fahrzeug und Auftrag beide noch frei sind.
 3. **Regel „Auftrag für Auftrag“:** die Aufträge der Reihe nach (nach Nummer) durchgehen; jeder bekommt das freie Fahrzeug in Reichweite mit den geringsten Kosten.
@@ -158,8 +160,6 @@ with st.sidebar:
         seed = int(st.session_state.get(KEPT["seed_input"], C.DEFAULT_SEED))
         st.caption("Diese Karte ist fest - es gibt nichts zu erzeugen. Zahl der Fahrzeuge und Aufträge, Reichweite, Ballung und Seed gehören zur zufälligen Karte.")
 
-sync_query_params({"net_select": net_key, "rule_radio": rule, "n_slider": int(n), "m_slider": int(m), "reach_slider": int(reach), "ballung_slider": int(ballung), "seed_input": int(seed)})
-
 # feste Karten ignorieren die Zufallsregler: sonst würden gleiche Karten unter verschiedenen Schlüsseln mehrfach berechnet
 params = (net_key, int(n), int(m), int(reach), int(ballung), int(seed))
 if net_key in C.FIXED_NETS:
@@ -199,6 +199,10 @@ else:
                f"In der Symmetrischen Differenz unten gibt es {d['n_augment']} Weg{'e' if d['n_augment'] != 1 else ''}, der Greedy um je ein Paar verbessern würde. "
                f"Die Kosten ({g.cost} gegen {o.cost} Minuten) sind hier nicht vergleichbar: eine Zuordnung mit weniger Paaren ist trivial billiger.")
 
+layout = st.radio("Darstellung", list(C.LAYOUT_LABELS), key="layout_radio", format_func=lambda k: C.LAYOUT_LABELS[k], horizontal=True,
+                  help="Karte: Fahrzeuge und Aufträge liegen dort, wo sie auf der Karte sind. Zwei Seiten: dieselben Fahrzeuge links, dieselben Aufträge rechts, jede Kante läuft von einer Seite zur anderen - ein bipartiter Graph. Paare und Kosten sind in beiden Darstellungen dieselben.")
+sync_query_params({"net_select": net_key, "rule_radio": rule, "layout_radio": layout, "n_slider": int(n), "m_slider": int(m), "reach_slider": int(reach), "ballung_slider": int(ballung), "seed_input": int(seed)})
+
 # Schritt-für-Schritt: die Entscheidungen von Greedy nacheinander
 if st.session_state.get("gm_step_owner") != (params, rule):
     st.session_state["gm_step"] = g.count
@@ -212,13 +216,13 @@ else:
 
 left, right = st.columns(2)
 left.markdown(f"**Greedy: {C.RULE_LABELS[rule]}** ({step} von {g.count} Entscheidungen)")
-left.plotly_chart(build_map(sc, g.pairs[:step], C.COLORS["greedy"], "Greedy"), width="stretch", key="map_greedy")
+left.plotly_chart(build_map(sc, g.pairs[:step], C.COLORS["greedy"], "Greedy", layout=layout), width="stretch", key="map_greedy")
 right.markdown("**Optimum** (exakte Messlatte)")
-right.plotly_chart(build_map(sc, o.pairs, C.COLORS["optimal"], "Optimum"), width="stretch", key="map_opt")
-st.caption("Quadrate sind Fahrzeuge, Kreise Aufträge; ohne Partner nur als Umriss; blasse Linien sind mögliche Paare. Bei kleinen Karten stehen die Minuten an den gewählten Paaren.")
+right.plotly_chart(build_map(sc, o.pairs, C.COLORS["optimal"], "Optimum", layout=layout), width="stretch", key="map_opt")
+st.caption("Quadrate sind Fahrzeuge, Kreise Aufträge; ohne Partner nur als Umriss; blasse Linien sind mögliche Paare. Bei kleinen Karten stehen die Minuten an den gewählten Paaren. In der Darstellung „Zwei Seiten“ stehen die Fahrzeuge links und die Aufträge rechts (innerhalb jeder Spalte nach Lage der möglichen Partner geordnet, damit sich wenige Kanten kreuzen); Paare und Kosten sind dieselben wie auf der Karte.")
 
 st.markdown("**🔀 Symmetrische Differenz: was Greedy und Optimum unterscheidet**")
-st.plotly_chart(build_difference(sc, g.pairs, o.pairs, a.components), width="stretch", key="map_diff")
+st.plotly_chart(build_difference(sc, g.pairs, o.pairs, a.components, layout=layout), width="stretch", key="map_diff")
 st.caption(
     "Grau: Paare, die beide wählen. Blau: nur Greedy. Rot gestrichelt: nur das Optimum. In jeder Ecke treffen sich höchstens zwei dieser Linien - die Differenz zerfällt in **alternierende Wege und Kreise** (blau, rot, blau, ...). "
     "Ein Weg mit einer roten Kante mehr als blauen ist ein **Verbesserungsweg**: tauscht Greedy entlang dieses Wegs alle Paare, hat es ein Paar mehr. Genau so viele solche Wege gibt es, wie Greedy Paare fehlen. Der Algorithmus, der sie systematisch findet, ist das nächste Stück der Linie."
@@ -250,7 +254,7 @@ else:
         st.info("ℹ️ Bei dieser Reichweite gibt es auf keiner der Karten ein mögliches Paar.")
     else:
         p1, p2, p3, p4 = st.columns(4)
-        p1.metric("Optimum getroffen", _pct(100 * dist["share_optimal"]), help="Anteil der Karten, auf denen Greedy dieselben Paare-Zahl und Kosten hat wie das Optimum.")
+        p1.metric("Optimum getroffen", _pct(100 * dist["share_optimal"]), help="Anteil der Karten, auf denen Greedy dieselbe Paarzahl und dieselben Kosten hat wie das Optimum.")
         p2.metric("Weniger Paare", _pct(100 * dist["share_fewer"]), delta=f"im Mittel {_f(dist['greedy_pairs_mean'])} statt {_f(dist['opt_pairs_mean'])}", delta_color="off",
                   help="Anteil der Karten, auf denen Greedy weniger Paare findet als das Optimum.")
         p3.metric("Mehrkosten bei gleicher Paarzahl", _pct(100 * dist["share_costlier"]), delta=f"Median {_pct(dist['cost_gap_median'], 1)}" if dist["cost_gap_median"] is not None else None, delta_color="off",
@@ -310,7 +314,7 @@ st.markdown(
 | **Lokal billig ist billig** | Alles erreichbar: alle Aufträge bedient, aber im Median 14 % über dem Optimum (Regel „Auftrag für Auftrag“: 21 %), auf keiner der 100 Karten optimal. | **Ungarische Methode**: die Kosten aller Paare gemeinsam betrachten |
 | **Die Reihenfolge der Aufträge ist gegeben** | Wenige Fahrzeuge (10 zu 20 Aufträgen, alles erreichbar): „Auftrag für Auftrag“ zahlt im Median 109 % mehr als das Optimum, „Billigste Kante zuerst“ 1,6 %. | **Online-Matching**: die Reihenfolge ist Teil des Problems |
 | **Nur Kosten zählen, niemand hat Wünsche** | Fahrzeuge und Aufträge haben hier keine Vorlieben; sobald sie welche haben, ist nicht mehr die Summe der Kosten das Ziel, sondern dass niemand abwandern möchte. | **Gale–Shapley**: stabile Paarungen |
-| **Es gibt zwei getrennte Seiten** | Fahrzeuge und Aufträge bilden zwei Gruppen; sollen sich Fahrer untereinander paaren (Zweierteams), gibt es Zyklen ungerader Länge, die die zweiseitigen Verfahren nicht behandeln. | **Blossom**: allgemeine Graphen |
+| **Der Graph ist bipartit (zwei Seiten)** | Kanten gibt es nur zwischen Fahrzeugen und Aufträgen. Soll dagegen jeder mit jedem gepaart werden können, etwa zwei Fahrer, die gemeinsam eine Fahrt übernehmen (Zweierteams), kann es Kreise ungerader Länge geben (drei Fahrer, die einander alle erreichen); die zweiseitigen Verfahren behandeln sie nicht. | **Blossom**: allgemeine Graphen |
 """
 )
 st.caption("Die Matching-Linie ist inzwischen vollständig gebaut (13 Stücke): Augmentierende Pfade, Hopcroft–Karp, Ungarische Methode, Auktionsalgorithmus, Blossom, Gewichteter Blossom, Gale–Shapley, Stabile Mitbewohner, Krankenhaus-Zulassung, Top Trading Cycles, Nierentausch und Online-Matching.")
@@ -353,7 +357,7 @@ $$\sum_{j} x_{ij}\le 1\ \ \forall i,\qquad \sum_{i} x_{ij}\le 1\ \ \forall j,\qq
 
 **Messlatte (exakt).** Die Zuordnung mit Gewichten $B-c_{ij}$ (0 für unmögliche Paare) wird durch kürzeste augmentierende Wege mit Potenzialen gelöst, $O(N^3)$ auf einer quadratischen ganzzahligen Matrix mit $N=\max(|V|,|O|)$. Hier nur zum Messen; das Verfahren ist das Thema der Ungarischen Methode.
 
-**Grenzen.** (1) Eine gewählte Kante wird nie zurückgenommen. (2) Kosten werden nur paarweise, nie gemeinsam betrachtet. (3) Die Reihenfolge der Aufträge ist fest. (4) Keine Präferenzen. (5) Zwei getrennte Seiten.
+**Grenzen.** (1) Eine gewählte Kante wird nie zurückgenommen. (2) Kosten werden nur paarweise, nie gemeinsam betrachtet. (3) Die Reihenfolge der Aufträge ist fest. (4) Keine Präferenzen. (5) Zwei Seiten (bipartit).
 
 Implementiert in `gm_scenario.py` (Karten, eigener Zufallsgenerator), `gm_algorithm.py` (Regeln, Messlatte, Symmetrische Differenz), `gm_evaluation.py` (Kennzahlen, Verteilung, Sweeps).
         """

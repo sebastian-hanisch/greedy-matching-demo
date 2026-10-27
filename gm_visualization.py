@@ -1,6 +1,8 @@
 """Plotly-Abbildungen: Karten mit Paaren, Symmetrische Differenz, Paarzahlen, Verteilungen und Reichweite-Sweep.
 Achsen sind gesperrt (fixedrange), damit Touch-Geräte beim Scrollen nicht zoomen."""
 
+from dataclasses import replace
+
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -20,6 +22,50 @@ def lock_axes(fig):
 def _base(fig, height):
     fig.update_layout(height=height, margin=dict(l=10, r=10, t=10, b=10), legend=dict(orientation="h", y=-0.08), plot_bgcolor="rgba(0,0,0,0)")
     return lock_axes(fig)
+
+
+def _two_sided_order(sc, sweeps=4):
+    """Reihenfolge der Ecken in den beiden Spalten (oben nach unten): Start nach Kartenlage, dann abwechselnd jede Seite nach dem Mittel der Plätze ihrer möglichen Partner (weniger Kreuzungen)."""
+    vo = sorted(range(sc.n), key=lambda i: (sc.vehicles[i][1], sc.vehicles[i][0], i))
+    oo = sorted(range(sc.m), key=lambda j: (sc.orders[j][1], sc.orders[j][0], j))
+    for _ in range(sweeps):
+        pv = {i: r for r, i in enumerate(vo)}
+        keys = {}
+        for j in oo:
+            nb = [pv[i] for i in range(sc.n) if sc.feasible[i, j]]
+            keys[j] = sum(nb) / len(nb) if nb else oo.index(j) * (sc.n - 1) / max(sc.m - 1, 1)
+        oo = sorted(oo, key=lambda j: (keys[j], j))
+        po = {j: r for r, j in enumerate(oo)}
+        keys = {}
+        for i in vo:
+            nb = [po[j] for j in range(sc.m) if sc.feasible[i, j]]
+            keys[i] = sum(nb) / len(nb) if nb else vo.index(i) * (sc.m - 1) / max(sc.n - 1, 1)
+        vo = sorted(vo, key=lambda i: (keys[i], i))
+    return vo, oo
+
+
+def arrange(sc, layout):
+    """Karte unverändert; Darstellung "bipartit": Fahrzeuge links, Aufträge rechts, in je einer Spalte. Nur die Koordinaten ändern sich, Kosten und Paare bleiben dieselben."""
+    if layout != "bipartit":
+        return sc
+    vo, oo = _two_sided_order(sc)
+
+    def column(order, x):
+        k = len(order)
+        pos = {e: (x, 100 - 100 * r / (k - 1) if k > 1 else 50) for r, e in enumerate(order)}
+        return tuple(pos[e] for e in range(k))
+
+    return replace(sc, vehicles=column(vo, 0), orders=column(oo, 100))
+
+
+def _small(sc, layout):
+    """Beschriften wir die Ecken? Auf der Karte bis 14 Ecken, in den Spalten bis 20 je Seite."""
+    return max(sc.n, sc.m) <= 20 if layout == "bipartit" else sc.n + sc.m <= 14
+
+
+def _tpos(layout, side):
+    """Beschriftungsposition: auf der Karte über der Ecke, in den Spalten außen neben der Ecke."""
+    return {"vehicle": "middle left", "order": "middle right"}[side] if layout == "bipartit" else "top center"
 
 
 def _collinear(sc):
@@ -62,7 +108,13 @@ def _feasible_pairs(sc):
     return [(i, j) for i in range(sc.n) for j in range(sc.m) if sc.feasible[i, j]]
 
 
-def _map_layout(fig, sc, height):
+def _map_layout(fig, sc, height, layout="map"):
+    if layout == "bipartit":
+        fig.update_xaxes(visible=False, range=[-32, 132])
+        fig.update_yaxes(visible=False, range=[-6, 116])
+        for x, text in ((0, "Fahrzeuge"), (100, "Aufträge")):
+            fig.add_annotation(x=x, y=110, text=f"<b>{text}</b>", showarrow=False)
+        return _base(fig, max(height, min(800, 22 * max(sc.n, sc.m) + 110)))
     xs = [p[0] for p in sc.vehicles + sc.orders]
     ys = [p[1] for p in sc.vehicles + sc.orders]
     pad = 8
@@ -76,25 +128,26 @@ def _map_layout(fig, sc, height):
     return _base(fig, height)
 
 
-def _vertices(fig, sc, matched_v, matched_o, label=True):
+def _vertices(fig, sc, matched_v, matched_o, label=True, layout="map"):
     """Fahrzeuge (Quadrate) und Aufträge (Kreise); ohne Partner nur als Umriss."""
-    small = sc.n + sc.m <= 14
-    for kind, pts, matched, symbol, color, prefix in (("Fahrzeug", sc.vehicles, matched_v, "square", C.COLORS["vehicle"], "F"),
-                                                       ("Auftrag", sc.orders, matched_o, "circle", C.COLORS["order"], "A")):
+    small = _small(sc, layout)
+    for kind, pts, matched, symbol, color, prefix, tpos in (("Fahrzeug", sc.vehicles, matched_v, "square", C.COLORS["vehicle"], "F", _tpos(layout, "vehicle")),
+                                                             ("Auftrag", sc.orders, matched_o, "circle", C.COLORS["order"], "A", _tpos(layout, "order"))):
         for on, sym, name in ((True, symbol, f"{kind} mit Partner"), (False, symbol + "-open", f"{kind} ohne Partner")):
             idx = [k for k in range(len(pts)) if (k in matched) == on]
             if not idx:
                 continue
             fig.add_trace(go.Scatter(
                 x=[pts[k][0] for k in idx], y=[pts[k][1] for k in idx], mode="markers+text" if small and label else "markers", name=name,
-                text=[f"{prefix}{k + 1}" for k in idx] if small and label else None, textposition="top center",
+                text=[f"{prefix}{k + 1}" for k in idx] if small and label else None, textposition=tpos,
                 hovertext=[f"{kind} {k + 1} ({pts[k][0]}, {pts[k][1]})" for k in idx], hoverinfo="text",
                 marker=dict(symbol=sym, size=10 if on else 11, color=color, line=dict(width=2, color=color))))
 
 
-def build_map(sc, pairs, color, name, show_costs=True, height=430):
+def build_map(sc, pairs, color, name, show_costs=True, height=430, layout="map"):
     """Karte mit allen möglichen Kanten (blass) und den gewählten Paaren."""
-    curved = _collinear(sc)
+    sc = arrange(sc, layout)
+    curved = layout != "bipartit" and _collinear(sc)
     fig = go.Figure()
     ex, ey = _segments(sc, _feasible_pairs(sc), curved)
     fig.add_trace(go.Scatter(x=ex, y=ey, mode="lines", line=dict(color="rgba(150,150,150,0.35)", width=1), hoverinfo="skip", name="mögliche Paare"))
@@ -105,14 +158,15 @@ def build_map(sc, pairs, color, name, show_costs=True, height=430):
         if mid:
             fig.add_trace(go.Scatter(x=[m[0] for m in mid], y=[m[1] for m in mid], mode="text", text=[f"{m[2]} min" for m in mid], textposition="bottom center",
                                      textfont=dict(color=color), hoverinfo="skip", showlegend=False))
-    _vertices(fig, sc, {i for i, _ in pairs}, {j for _, j in pairs})
-    return _map_layout(fig, sc, height)
+    _vertices(fig, sc, {i for i, _ in pairs}, {j for _, j in pairs}, layout=layout)
+    return _map_layout(fig, sc, height, layout)
 
 
-def build_difference(sc, g_pairs, o_pairs, components, height=430):
+def build_difference(sc, g_pairs, o_pairs, components, height=430, layout="map"):
     """Symmetrische Differenz: nur Greedy blau, nur Optimum rot gestrichelt, gemeinsame Paare grau. Beim Überfahren steht die Art des Wegs."""
     g, o = set(g_pairs), set(o_pairs)
-    curved = _collinear(sc)
+    sc = arrange(sc, layout)
+    curved = layout != "bipartit" and _collinear(sc)
     fig = go.Figure()
     ex, ey = _segments(sc, _feasible_pairs(sc), curved)
     fig.add_trace(go.Scatter(x=ex, y=ey, mode="lines", line=dict(color="rgba(150,150,150,0.25)", width=1), hoverinfo="skip", name="mögliche Paare"))
@@ -130,8 +184,8 @@ def build_difference(sc, g_pairs, o_pairs, components, height=430):
                 x=[_edge_mid(sc, i, j, curved)[0] for i, j in pairs], y=[_edge_mid(sc, i, j, curved)[1] for i, j in pairs], mode="markers",
                 marker=dict(size=14, color="rgba(0,0,0,0)"), hovertext=[f"{name}: F{i + 1}–A{j + 1}, {int(sc.cost[i, j])} min<br>{KIND_NAMES[kind_of[(i, j)]]}" for i, j in pairs],
                 hoverinfo="text", showlegend=False))
-    _vertices(fig, sc, {i for i, _ in o} | {i for i, _ in g}, {j for _, j in o} | {j for _, j in g})
-    return _map_layout(fig, sc, height)
+    _vertices(fig, sc, {i for i, _ in o} | {i for i, _ in g}, {j for _, j in o} | {j for _, j in g}, layout=layout)
+    return _map_layout(fig, sc, height, layout)
 
 
 def build_count_bars(g_count, o_count, height=260):

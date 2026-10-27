@@ -16,6 +16,9 @@ FIXED_NETS = ("steal", "p4", "chain")
 RULE_LABELS = {"edge": "Billigste Kante zuerst", "order": "Auftrag für Auftrag"}
 DEFAULT_RULE = "edge"
 
+LAYOUT_LABELS = {"map": "Karte", "bipartit": "Zwei Seiten"}
+DEFAULT_LAYOUT = "map"
+
 # --- feste Seed-Mengen (unabhängig vom Nutzer-Seed, damit 🎲 die Verteilung nicht verschiebt) -------------------------------------
 DIST_SEEDS = tuple(range(100000, 100100))
 SWEEP_SEEDS = DIST_SEEDS[:40]
@@ -24,7 +27,7 @@ REACH_SWEEP = (10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120, 150)
 COLORS = {"greedy": "#1f77b4", "optimal": "#d62728", "common": "#8c8c8c", "vehicle": "#111111", "order": "#ff7f0e", "path": "#2ca02c"}
 
 # --- Presets ------------------------------------------------------------------------------------------------------------------
-_BASE = dict(net="random", rule=DEFAULT_RULE, n=DEFAULT_N, m=DEFAULT_M, reach=DEFAULT_REACH, ballung=DEFAULT_BALLUNG, seed=DEFAULT_SEED)
+_BASE = dict(net="random", rule=DEFAULT_RULE, layout=DEFAULT_LAYOUT, n=DEFAULT_N, m=DEFAULT_M, reach=DEFAULT_REACH, ballung=DEFAULT_BALLUNG, seed=DEFAULT_SEED)
 PRESETS = {
     "⚖️ Billigste Kante klaut": {**_BASE, "net": "steal"},
     "🔗 Pfad aus vier Punkten": {**_BASE, "net": "p4"},

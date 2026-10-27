@@ -53,6 +53,7 @@ Vor dem Schreiben der Texte wurde gemessen (Vormessung mit 400 Karten je Zelle; 
 
 - **Greedy gegen Optimum** auf einer Karte: zwei Karten nebeneinander (mit Schritt-Slider durch die Entscheidungen von Greedy), darunter die **Symmetrische Differenz** von Greedy und Optimum – sie zerfällt in alternierende Wege und Kreise; ein Weg mit einer Optimum-Kante mehr ist ein *Verbesserungsweg*, und genau so viele gibt es, wie Greedy Paare fehlen. Das ist der Teaser für das nächste Stück.
 - **Was garantiert Greedy?** Die Hälfte der Paare (beweisbar, als Skizze in der App) und nichts über die Kosten. Verteilung über 100 feste Karten (Anteile, Mittel, Median, Histogramme mit der Marke „Ihre Ziehung“), die beiden Regeln gegeneinander, ein Sweep über die Reichweite.
+- **Zwei Darstellungen desselben Graphen:** als Karte oder als **bipartiter Graph** (Fahrzeuge links, Aufträge rechts, jede Kante wechselt die Seite); Paare und Kosten sind in beiden dieselben.
 - **Feste Lehrbuchkarten** zum Nachrechnen von Hand (2 × 2, Pfad aus vier Punkten, drei Pfade) neben zufälligen Karten mit Größen-, Reichweite- und Ballungsregler.
 - **Wo die Annahmen enden:** welches spätere Stück an welcher Schwäche ansetzt.
 
